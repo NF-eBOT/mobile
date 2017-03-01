@@ -5,26 +5,41 @@ import {
     ListView,
     ScrollView,
     StyleSheet,
-    View
+    View,
+    Button,
+    ToastAndroid,
+    RefreshControl,
+    Vibration
 } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5FCFF',
+        padding: 15,
+        backgroundColor: '#111',
+        paddingTop: 5
     },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10,
+    item: {
+        marginBottom: 10,
+        padding: 15,
+        backgroundColor: '#222'
+    },
+    date: {
+        color: '#CCC',
+        fontSize: 13,
+        fontWeight: 'bold'
+    },
+    title: {
+        color: '#CCC',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10
     }
 });
 
-class ListNews extends Component{
+class ListNews extends Component {
 
-    constructor(){
+    constructor() {
 
         super();
 
@@ -32,28 +47,94 @@ class ListNews extends Component{
 
         let collection = [];
 
-        for(var i = 0; i < 50; i++) {
-            collection.push(i);
+        collection.push({
+            title: 'Arquivo de registros da ECF - Leiaute 3',
+            date: '28/02/2017',
+            url: 'http://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=tW+YMyk/50s=',
+            scraper: 'nfe.fazenda.gov.br'
+        });
+
+        for(var i = 0; i < 17; i++) {
+            collection.push({
+                title: 'EFD ICMS IPI - Contribuintes do IPI - Distrito Federal',
+                date: '28/02/2017',
+                url: 'http://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=tW+YMyk/50s=',
+                scraper: 'nfe.fazenda.gov.br'
+            });
         }
 
         this.state = {
-            dataSource: ds.cloneWithRows(collection),
+            isRefreshing: false,
+            dataSource: ds.cloneWithRows(collection)
         };
 
     }
 
-    render(){
+    render() {
 
-        return(
+        return (
+
+            <View style={styles.container}>
 
                 <ListView
+                    refreshControl={
+          <RefreshControl
+            refreshing={this.state.isRefreshing}
+            onRefresh={this._onRefresh}
+            tintColor="#FFF"
+            title="Loading..."
+            titleColor="#333"
+            colors={['#333', '#555', '#777']}
+            progressBackgroundColor="#fff"
+          />
+        }
                     automaticallyAdjustContentInsets={false}
                     flex={1}
                     initialListSize={9}
                     dataSource={this.state.dataSource}
-                    renderRow={(rowData) => <Text>{rowData}</Text>}
+                    renderRow={(data) => {
+
+                            return(
+                                <View style={styles.item}>
+
+                                    <Text style={styles.date}>{data.date}</Text>
+                                    <Text style={styles.title}>{data.title}</Text>
+
+                                    <Button
+                                        onPress={this.button_link}
+                                        title={data.scraper}
+                                        color='#333'
+                                    />
+
+                                </View>
+                            )
+
+                        }}
                 />
+
+            </View>
         );
+
+    }
+
+    button_link(){
+
+        //ToastAndroid.show('any', ToastAndroid.SHORT);
+
+    }
+
+    _onRefresh = () => {
+
+        Vibration.vibrate([0, 100]);
+
+        this.setState({isRefreshing: true});
+        ToastAndroid.show('Atualizando, aguarde...', ToastAndroid.SHORT);
+
+        setTimeout(()=>{
+            this.setState({isRefreshing: false});
+            ToastAndroid.show('Atualização finalizada.', ToastAndroid.SHORT);
+            Vibration.vibrate([0, 100, 0, 400]);
+        }, 3000);
 
     }
 
