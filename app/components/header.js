@@ -1,20 +1,54 @@
 import React, {Component} from 'react';
+
 import {
-    View,
-    Text
+    Text,
+    StatusBar
 } from 'react-native';
 
-class Header extends Component{
+import {
+    Header,
+    Button,
+    Right,
+    Body,
+    Icon
+} from 'native-base';
 
-    render(){
+let sideMenu = null;
 
-        return(
+class _Header extends Component {
 
-            <View style={{padding:10, backgroundColor: '#DDD'}}>
-                <Text style={{textAlign:'center', fontSize: 16, color: '#333', fontWeight: 'bold'}}>
+    openMenu() {
+        sideMenu.openDrawer();
+    };
+
+    render() {
+
+        sideMenu = this.props.sidemenu;
+
+        return (
+
+
+            <Header style={{padding:10, backgroundColor: '#DDD', height: 50}}>
+
+                <StatusBar
+                    backgroundColor="#333"
+                    barStyle="light-content"
+                />
+
+                <Body>
+                <Text style={{color: '#333', fontSize: 15, fontWeight: 'bold' }}>
                     Últimas 17 atualizações
                 </Text>
-            </View>
+                </Body>
+
+                <Right>
+                    <Button onPress={this.openMenu} style={{paddingTop: 30}} transparent>
+                        <Icon name='ios' style={{color: '#333'}}/>
+                    </Button>
+                </Right>
+
+            </Header>
+
 
         );
 
@@ -22,4 +56,4 @@ class Header extends Component{
 
 }
 
-export default Header;
+export default _Header;

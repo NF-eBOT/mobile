@@ -9,7 +9,8 @@ import {
     Button,
     ToastAndroid,
     RefreshControl,
-    Vibration
+    Vibration,
+    Linking
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -70,6 +71,10 @@ class ListNews extends Component {
 
     }
 
+    open_url(url) {
+        Linking.openURL(url);
+    }
+
     render() {
 
         return (
@@ -101,7 +106,9 @@ class ListNews extends Component {
                                     <Text style={styles.title}>{data.title}</Text>
 
                                     <Button
-                                        onPress={this.button_link}
+                                        onPress={()=>{
+                                            this.open_url(data.url)
+                                        }}
                                         title={data.scraper}
                                         color='#333'
                                     />
