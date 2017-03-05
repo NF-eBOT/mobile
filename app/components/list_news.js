@@ -13,30 +13,11 @@ import {
     Linking
 } from 'react-native';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 15,
-        backgroundColor: '#111',
-        paddingTop: 5
-    },
-    item: {
-        marginBottom: 10,
-        padding: 15,
-        backgroundColor: '#222'
-    },
-    date: {
-        color: '#CCC',
-        fontSize: 13,
-        fontWeight: 'bold'
-    },
-    title: {
-        color: '#CCC',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 10
-    }
-});
+import { Icon } from 'native-base';
+import moment from 'moment';
+import Spinner from 'react-native-loading-spinner-overlay';
+
+import styles from './../styles/list_news.styles';
 
 class ListNews extends Component {
 
@@ -44,35 +25,14 @@ class ListNews extends Component {
 
         super();
 
-        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-
-        let collection = [];
-
-        collection.push({
-            title: 'Arquivo de registros da ECF - Leiaute 3',
-            date: '28/02/2017',
-            url: 'http://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=tW+YMyk/50s=',
-            scraper: 'nfe.fazenda.gov.br'
-        });
-
-        for(var i = 0; i < 17; i++) {
-            collection.push({
-                title: 'EFD ICMS IPI - Contribuintes do IPI - Distrito Federal',
-                date: '28/02/2017',
-                url: 'http://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=tW+YMyk/50s=',
-                scraper: 'nfe.fazenda.gov.br'
-            });
-        }
-
         this.state = {
             isRefreshing: false,
-            dataSource: ds.cloneWithRows(collection)
+            loading: true,
+            dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
         };
 
-    }
+        this.getNews();
 
-    open_url(url) {
-        Linking.openURL(url);
     }
 
     render() {
@@ -81,35 +41,67 @@ class ListNews extends Component {
 
             <View style={styles.container}>
 
+                <Spinner visible={this.state.loading} overlayColor='rgba(0,0,0,0.9)'
+                         textContent={"Atualizando, aguarde..."} textStyle={{color: '#FFF'}}/>
+
                 <ListView
                     refreshControl={
-          <RefreshControl
-            refreshing={this.state.isRefreshing}
-            onRefresh={this._onRefresh}
-            tintColor="#FFF"
-            title="Loading..."
-            titleColor="#333"
-            colors={['#333', '#555', '#777']}
-            progressBackgroundColor="#fff"
-          />
-        }
+                        <RefreshControl
+                            refreshing={this.state.isRefreshing}
+                            onRefresh={this.onRefresh}
+                            tintColor="#FFF"
+                            title="Loading..."
+                            titleColor="#333"
+                            colors={['#333', '#555', '#777']}
+                            progressBackgroundColor="#fff"
+                        />
+                    }
                     automaticallyAdjustContentInsets={false}
                     flex={1}
                     initialListSize={9}
                     dataSource={this.state.dataSource}
                     renderRow={(data) => {
 
-                            return(
+                            // TODO: Refactor this !!!!
+                            // data.created_at = 28/02/2017, can`t display, this date is migrate date
+                            // all news before 29/02 is same date and can' display
+                            if(moment(data.created_at).format('DD/MM/YYYY') == '28/02/2017')
+                            {
+
+                                return(
                                 <View style={styles.item}>
 
-                                    <Text style={styles.date}>{data.date}</Text>
                                     <Text style={styles.title}>{data.title}</Text>
 
                                     <Button
                                         onPress={()=>{
-                                            this.open_url(data.url)
+                                            Linking.openURL(data.scraper.page_url);
                                         }}
-                                        title={data.scraper}
+                                        title={data.scraper.name}
+                                        color='#333'
+                                    />
+
+                                </View>
+                                )
+
+                            }
+
+                            return(
+                                <View style={styles.item}>
+
+                                    <Text style={styles.date}>
+                                        <Icon name='md-calendar' style={{color: '#CCC', fontSize: 22}}/>
+                                        &nbsp;&nbsp;
+                                        {moment(data.created_at).format('DD/MM/YYYY')}
+                                    </Text>
+
+                                    <Text style={styles.title}>{data.title}</Text>
+
+                                    <Button
+                                        onPress={()=>{
+                                            Linking.openURL(data.scraper.page_url);
+                                        }}
+                                        title={data.scraper.name}
                                         color='#333'
                                     />
 
@@ -124,27 +116,49 @@ class ListNews extends Component {
 
     }
 
-    button_link(){
+    getNews() {
 
-        //ToastAndroid.show('any', ToastAndroid.SHORT);
+        return fetch('https://api.nfebot.com.br:8443/news/app/list')
+            .then((response) => response.json())
+            .then((responseJson) => {
+
+                let data = JSON.parse(responseJson);
+
+                console.log(data);
+
+                let collection = [];
+
+                data.map((key)=>collection.push(key));
+
+                const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+                this.setState({
+                    dataSource: ds.cloneWithRows(collection),
+                    loading: false
+                });
+
+                return true;
+
+            })
+            .catch((error) => {
+                console.error(error);
+            });
 
     }
 
-    _onRefresh = () => {
+    onRefresh = () => {
 
         Vibration.vibrate([0, 100]);
 
         this.setState({isRefreshing: true});
         ToastAndroid.show('Atualizando, aguarde...', ToastAndroid.SHORT);
 
-        setTimeout(()=>{
+        this.getNews().then(()=>{
             this.setState({isRefreshing: false});
             ToastAndroid.show('Atualização finalizada.', ToastAndroid.SHORT);
             Vibration.vibrate([0, 100, 0, 400]);
-        }, 3000);
+        });
 
     }
-
 }
 
 export default ListNews;

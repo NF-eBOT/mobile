@@ -6,69 +6,30 @@ import {
     DrawerLayoutAndroid,
     StyleSheet,
     Image,
-    Button,
     StatusBar,
+    Button,
     Linking
 } from 'react-native';
 
-import Spinner from 'react-native-loading-spinner-overlay';
+import {
+    Header,
+    Right,
+    Button as _Button,
+    Body,
+    Icon
+} from 'native-base';
 
 import ListNews from './list_news';
-import _Header from './header';
 import images from './../config/images';
 
-const styles = StyleSheet.create({
-    sidemenu_container: {
-        flex: 1,
-        backgroundColor: '#DDD'
-    },
-    sidemenu_container_branding: {
-        backgroundColor: '#F1F0F0',
-        paddingBottom: 20,
-        paddingTop: 20
-    },
-    sidemenu_container_logo: {
-        width: 120,
-        height: 120,
-        marginLeft: 40
-    },
-    sidemenu_container_letter: {
-        width: 163,
-        height: 24,
-        marginLeft: 18.5,
-        marginTop: 20
-    },
-    sidemenu_container_items: {
-        padding: 20
-    },
-    sidemenu_container_buttons_container: {
-        marginBottom: 10
-    }
-});
+import styles from './../styles/base.styles';
 
 class Base extends Component {
-
-    constructor() {
-
-        super();
-
-        this.state = {loading: true};
-
-        setTimeout(() => {
-            this.setState({loading: false});
-        }, 3000);
-
-    }
-
-    open_url(url) {
-        Linking.openURL(url);
-    }
 
     render() {
 
         const renderNavigationView = (
             <View style={styles.sidemenu_container}>
-
                 <View style={styles.sidemenu_container_branding}>
                     <Image
                         style={styles.sidemenu_container_logo}
@@ -80,7 +41,6 @@ class Base extends Component {
                         source={images.letter}
                     />
                 </View>
-
                 <View style={styles.sidemenu_container_items}>
 
                     <View style={styles.sidemenu_container_buttons_container}>
@@ -88,7 +48,7 @@ class Base extends Component {
                             title='sobre'
                             color='#333'
                             onPress={()=>{
-                                this.open_url('https://nfebot.com.br')
+                                Linking.openURL('https://nfebot.com.br');
                             }}
                         />
                     </View>
@@ -98,7 +58,7 @@ class Base extends Component {
                             title='github'
                             color='#333'
                             onPress={()=>{
-                                this.open_url('https://github.com/NF-eBOT')
+                                Linking.openURL('https://github.com/NF-eBOT');
                             }}
                         />
                     </View>
@@ -115,15 +75,34 @@ class Base extends Component {
                 renderNavigationView={()=>renderNavigationView}>
 
                 <View style={{flex:1}}>
-                    <Spinner visible={this.state.loading} overlayColor='rgba(0,0,0,0.9)'
-                             textContent={"Atualizando, aguarde..."} textStyle={{color: '#FFF'}}/>
-                    <_Header sidemenu={this.refs['DRAWER_REF']}/>
+
+                    <Header style={{padding:10, backgroundColor: '#DDD', height: 50}}>
+
+                        <StatusBar
+                            backgroundColor="#333"
+                            barStyle="light-content"
+                        />
+
+                        <Body>
+                        <Text style={{color: '#333', fontSize: 15, fontWeight: 'bold' }}>
+                            Últimas 17 atualizações
+                        </Text>
+                        </Body>
+
+                        <Right>
+                            <_Button onPress={()=>{ this.refs['DRAWER_REF'].openDrawer(); }} style={{paddingTop: 30}} transparent>
+                                <Icon name='md-menu' style={{color: '#333', marginTop: 5}}/>
+                            </_Button>
+                        </Right>
+
+                    </Header>
+
                     <ListNews/>
+
                 </View>
 
             </DrawerLayoutAndroid>
         );
-
     }
 }
 
