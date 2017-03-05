@@ -1,6 +1,5 @@
-# NF-eBOT Mobile APP
 <img height="150px" src="https://github.com/NF-eBOT/mobile/blob/master/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" />
-<br/>
+# NF-eBOT Mobile APP
 Android Mobile with news list, builded with [React Native](https://facebook.github.io/react-native/).
 
 <br/>
